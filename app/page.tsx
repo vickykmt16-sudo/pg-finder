@@ -222,7 +222,7 @@ export default function Home() {
             <h1 className="text-4xl sm:text-5xl lg:text-[72px] font-black text-white leading-[1.05] mb-6 tracking-tight">
               Find Your Next <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">
-                Perfect Home
+                Perfect PG in Sikar
               </span>
             </h1>
             <p className="text-sm sm:text-lg text-gray-400 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
