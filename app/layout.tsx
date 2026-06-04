@@ -1,12 +1,15 @@
 import { ClerkProvider } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import Navbar from '../components/Navbar'
-import RoleModal from '../components/RoleModal' // <-- YE NAYI LINE HAI
+import RoleModal from '../components/RoleModal'
 import "./globals.css";
 
 export const metadata = {
   title: 'PG Finder',
   description: 'Find your perfect PG',
+  verification: {
+    google: 'rMMVU0sfcUhmjU78tDyEEKljKXI34XoIAP7uamGDib4',
+  },
 }
 
 export default function RootLayout({
@@ -15,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider 
+    <ClerkProvider
       appearance={{
         baseTheme: dark,
         variables: { colorPrimary: '#facc15' }
@@ -24,7 +27,7 @@ export default function RootLayout({
       <html lang="en">
         <body className="bg-[#050505] text-white">
           <Navbar />
-          <RoleModal /> {/* <-- YE POP-UP YAHAN LAGA DIYA */}
+          <RoleModal />
           {children}
         </body>
       </html>
