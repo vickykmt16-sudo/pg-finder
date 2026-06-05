@@ -189,15 +189,15 @@ export default function SearchPage() {
         <div className="bg-[#0a0a0a]/80 backdrop-blur-xl border border-gray-800 rounded-full p-1.5 md:p-2 shadow-2xl flex flex-row items-center w-full mb-12 transition-all hover:border-gray-700">
           <div className="flex-1 flex flex-col px-3 md:px-6 border-r border-gray-800 w-full overflow-hidden text-left">
             <label className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5 truncate">City</label>
-            <input type="text" value={searchCity} onChange={(e) => setSearchCity(e.target.value)} placeholder="Jaipur" className="bg-transparent border-none outline-none text-white text-[10px] md:text-sm w-full placeholder-gray-600 font-medium p-0 truncate" />
+            <input type="text" value={searchCity} onChange={(e) => setSearchCity(e.target.value)} placeholder="Enter City" className="bg-transparent border-none outline-none text-white text-[10px] md:text-sm w-full placeholder-gray-600 font-medium p-0 truncate" />
           </div>
           <div className="flex-1 flex flex-col px-3 md:px-6 border-r border-gray-800 w-full overflow-hidden text-left">
             <label className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5 truncate">Location / Name</label>
-            <input type="text" value={searchLocation} onChange={(e) => setSearchLocation(e.target.value)} placeholder="Malviya.." className="bg-transparent border-none outline-none text-white text-[10px] md:text-sm w-full placeholder-gray-600 font-medium p-0 truncate" />
+            <input type="text" value={searchLocation} onChange={(e) => setSearchLocation(e.target.value)} placeholder="Enter Location " className="bg-transparent border-none outline-none text-white text-[10px] md:text-sm w-full placeholder-gray-600 font-medium p-0 truncate" />
           </div>
           <div className="flex-1 flex flex-col px-3 md:px-6 pr-2 w-full overflow-hidden text-left">
             <label className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5 truncate">Budget</label>
-            <input type="number" value={searchBudget} onChange={(e) => setSearchBudget(e.target.value)} placeholder="₹8000" className="bg-transparent border-none outline-none text-white text-[10px] md:text-sm w-full placeholder-gray-600 font-medium p-0 truncate" />
+            <input type="number" value={searchBudget} onChange={(e) => setSearchBudget(e.target.value)} placeholder="Enter Budget" className="bg-transparent border-none outline-none text-white text-[10px] md:text-sm w-full placeholder-gray-600 font-medium p-0 truncate" />
           </div>
           <button 
             onClick={isSearched ? clearSearch : handleSearch}
@@ -299,23 +299,25 @@ export default function SearchPage() {
                  </div>
                </div>
 
-               {/* Quick Rate System */}
-               <div className="mb-6 border-t border-gray-800 pt-4">
-                 <h4 className="text-gray-400 text-xs font-bold uppercase mb-2">Rate this Property</h4>
-                 <div className="flex gap-1">
-                   {[1, 2, 3, 4, 5].map((star) => (
-                     <button 
-                       key={star}
-                       onMouseEnter={() => setHoveredStar(star)}
-                       onMouseLeave={() => setHoveredStar(0)}
-                       onClick={() => handleRate(star)}
-                       className={`text-2xl transition-transform hover:scale-110 ${star <= (hoveredStar || givenRating) ? 'text-yellow-400' : 'text-gray-600'}`}
-                     >
-                       ★
-                     </button>
-                   ))}
+               {/* Quick Rate System - SIRF STUDENTS KE LIYE KHULEGA */}
+               {isStudent && (
+                 <div className="mb-6 border-t border-gray-800 pt-4">
+                   <h4 className="text-gray-400 text-xs font-bold uppercase mb-2">Rate this Property</h4>
+                   <div className="flex gap-1">
+                     {[1, 2, 3, 4, 5].map((star) => (
+                       <button 
+                         key={star}
+                         onMouseEnter={() => setHoveredStar(star)}
+                         onMouseLeave={() => setHoveredStar(0)}
+                         onClick={() => handleRate(star)}
+                         className={`text-2xl transition-transform hover:scale-110 ${star <= (hoveredStar || givenRating) ? 'text-yellow-400' : 'text-gray-600'}`}
+                       >
+                         ★
+                       </button>
+                     ))}
+                   </div>
                  </div>
-               </div>
+               )}
 
                <div className="bg-[#1a1a1a] border border-gray-800 p-4 rounded-2xl mb-4">
                  <div className="flex justify-between items-center mb-4">

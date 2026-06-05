@@ -140,11 +140,11 @@ export default function AddPGPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Hostel / PG Name</label>
-                <input type="text" required placeholder="e.g. Sunrise Premium PG" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
+                <input type="text" required placeholder="Enter PG Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Monthly Rent (₹)</label>
-                <input type="number" required placeholder="8000" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
+                <input type="number" required placeholder="Enter Monthly Rent" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Property Type</label>
@@ -156,11 +156,11 @@ export default function AddPGPage() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">City</label>
-                <input type="text" required placeholder="e.g. Jaipur" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
+                <input type="text" required placeholder="Enter City" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Area / Location</label>
-                <input type="text" required placeholder="e.g. Malviya Nagar" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
+                <input type="text" required placeholder="Enter Area / Location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
               </div>
             </div>
           </div>
@@ -171,11 +171,11 @@ export default function AddPGPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Owner Full Name</label>
-                <input type="text" required placeholder="John Doe" value={formData.ownerName} onChange={e => setFormData({...formData, ownerName: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
+                <input type="text" required placeholder="Enter Owner Name" value={formData.ownerName} onChange={e => setFormData({...formData, ownerName: e.target.value})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Phone Number (10 Digits)</label>
-                <input type="tel" required pattern="[0-9]{10}" maxLength={10} placeholder="9876543210" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
+                <input type="tel" required pattern="[0-9]{10}" maxLength={10} placeholder="Enter Phone Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})} className="w-full bg-[#111] border border-gray-800 focus:border-yellow-400 rounded-xl px-4 py-3 text-white outline-none transition-colors" />
                 {formData.phone && formData.phone.length !== 10 && <p className="text-red-500 text-xs mt-1">Must be exactly 10 digits.</p>}
               </div>
             </div>
