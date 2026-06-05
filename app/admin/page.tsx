@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useUser } from '@clerk/nextjs';
-import { supabase } from "@/lib/supabase"; // 👉 SUPABASE IMPORT KAREIN
+import { supabase } from "@/lib/supabase"; 
+import { fetchAllUsersFromClerk } from "./actions"; // 👉 NAYA BACKEND IMPORT
 
 // ICONS PACK
 const Icons = {
@@ -25,12 +26,15 @@ export default function AdminDashboard() {
   const [pendingListings, setPendingListings] = useState<any[]>([]);
   const [approvedListings, setApprovedListings] = useState<any[]>([]);
   const [allReviews, setAllReviews] = useState<any[]>([]);
+  
+  // 👉 NAYA STATE JO DIRECT CLERK SE DATA LEYGA
   const [realUsers, setRealUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+
   const [editingPG, setEditingPG] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80");
 
-  // 👉 DYNAMIC RATING FROM SUPABASE CLOUD
   const getDynamicRating = (pgId: number) => {
     const currentReviews = allReviews.filter((rev: any) => rev.pg_id === pgId);
     if (currentReviews.length === 0) return "New 🆕";
@@ -38,7 +42,6 @@ export default function AdminDashboard() {
     return `⭐ ${(sum / currentReviews.length).toFixed(1)}`;
   };
 
-  // 👉 FETCH ALL DATA DIRECTLY FROM SUPABASE CLOUD
   const fetchCloudData = async () => {
     // 1. Fetch Properties
     const { data: properties } = await supabase
@@ -56,27 +59,20 @@ export default function AdminDashboard() {
     if (reviews) setAllReviews(reviews);
   };
 
-  useEffect(() => {
-    // Initial fetch from cloud
-    fetchCloudData();
-
-    // User tracking (Keeping this local as it's not a DB table yet)
-    const storedUsers = JSON.parse(localStorage.getItem('realAppUsers') || "[]");
-    if (user) {
-      const userExists = storedUsers.find((u: any) => u.email === user.primaryEmailAddress?.emailAddress);
-      if (!userExists) {
-        const newUser = {
-          id: user.id, name: user.fullName || "User", email: user.primaryEmailAddress?.emailAddress || "No Email",
-          role: user.unsafeMetadata?.role || "Student",
-          joined: new Date(user.createdAt || Date.now()).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: '2-digit' })
-        };
-        storedUsers.push(newUser);
-        localStorage.setItem('realAppUsers', JSON.stringify(storedUsers));
-      }
+  // 👉 NAYA FUNCTION JO SARE USERS LAYEGA
+  const loadClerkUsers = async () => {
+    setLoadingUsers(true);
+    const users = await fetchAllUsersFromClerk();
+    if (users) {
+      setRealUsers(users);
     }
-    setRealUsers(storedUsers);
+    setLoadingUsers(false);
+  };
 
-    // Hero Image Config
+  useEffect(() => {
+    fetchCloudData();
+    loadClerkUsers(); // Jab page khulega tab users fetch honge
+
     const storedHero = localStorage.getItem('heroImage');
     if (storedHero) setHeroImage(storedHero);
   }, [user]);
@@ -95,70 +91,34 @@ export default function AdminDashboard() {
     (pg.location || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // 👉 APPROVE PROPERTY TO SUPABASE
   const handleApprove = async (id: number) => {
-    const { error } = await supabase
-      .from('pg_properties')
-      .update({ status: "Approved", isFeatured: true })
-      .eq('id', id);
-
-    if (error) {
-      alert("❌ Error Approving: " + error.message);
-    } else {
-      alert("✅ Property Approved and is now Live!");
-      fetchCloudData(); // Refresh list from cloud
-    }
+    const { error } = await supabase.from('pg_properties').update({ status: "Approved", isFeatured: true }).eq('id', id);
+    if (error) alert("❌ Error Approving: " + error.message);
+    else { alert("✅ Property Approved!"); fetchCloudData(); }
   };
 
-  // 👉 REJECT/DELETE PROPERTY FROM SUPABASE
   const handleRejectOrDelete = async (id: number) => {
-    if(confirm("⚠️ Are you sure you want to completely REMOVE this property? It will be deleted from the cloud database permanently.")) {
-      const { error } = await supabase
-        .from('pg_properties')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert("❌ Error Deleting: " + error.message);
-      } else {
-        alert("🗑️ Property completely removed from Cloud.");
-        fetchCloudData(); // Refresh list from cloud
-      }
+    if(confirm("⚠️ Are you sure you want to completely REMOVE this property?")) {
+      const { error } = await supabase.from('pg_properties').delete().eq('id', id);
+      if (error) alert("❌ Error Deleting: " + error.message);
+      else { alert("🗑️ Property completely removed from Cloud."); fetchCloudData(); }
     }
   };
 
-  // 👉 UPDATE FEATURED STATUS IN SUPABASE
   const handleSetFeatured = async (id: number, featuredStatus: boolean) => {
-    const { error } = await supabase
-      .from('pg_properties')
-      .update({ isFeatured: featuredStatus })
-      .eq('id', id);
-      
+    const { error } = await supabase.from('pg_properties').update({ isFeatured: featuredStatus }).eq('id', id);
     if (!error) fetchCloudData();
   };
 
-  // 👉 UPDATE EDITED PROPERTY IN SUPABASE
   const handleEditSave = async () => {
-    const { error } = await supabase
-      .from('pg_properties')
-      .update({
-        name: editingPG.name,
-        price: editingPG.price,
-        type: editingPG.type,
-        location: editingPG.location,
-        owner_name: editingPG.owner_name,
-        phone: editingPG.phone,
-        status: "Approved" // Edited PG is automatically approved
-      })
-      .eq('id', editingPG.id);
+    const { error } = await supabase.from('pg_properties').update({
+      name: editingPG.name, price: editingPG.price, type: editingPG.type,
+      location: editingPG.location, owner_name: editingPG.owner_name,
+      phone: editingPG.phone, status: "Approved"
+    }).eq('id', editingPG.id);
 
-    if (error) {
-      alert("❌ Error Updating: " + error.message);
-    } else {
-      setEditingPG(null);
-      alert("✅ Property Updated Successfully in Cloud!");
-      fetchCloudData();
-    }
+    if (error) alert("❌ Error Updating: " + error.message);
+    else { setEditingPG(null); alert("✅ Property Updated!"); fetchCloudData(); }
   };
 
   const handleHeroImageUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,25 +130,13 @@ export default function AdminDashboard() {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1000; 
-          const MAX_HEIGHT = 800;
-          let width = img.width;
-          let height = img.height;
+          const MAX_WIDTH = 1000; const MAX_HEIGHT = 800;
+          let width = img.width; let height = img.height;
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
 
-          canvas.width = width;
-          canvas.height = height;
+          canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0, width, height);
 
@@ -198,9 +146,7 @@ export default function AdminDashboard() {
             setHeroImage(compressedBase64);
             localStorage.setItem('heroImage', compressedBase64);
             alert("🖼️ Home Page Image Updated Successfully!");
-          } catch (error) {
-            alert("❌ Error: Image parser fail.");
-          }
+          } catch (error) { alert("❌ Error: Image parser fail."); }
         };
         img.src = event.target?.result as string;
       };
@@ -405,7 +351,10 @@ export default function AdminDashboard() {
           {/* TAB: USERS */}
           {activeMenu === "users" && (
             <div className="bg-[#1A1A1A] border border-[#262626] rounded-2xl overflow-hidden">
-              <div className="p-6 border-b border-[#262626]"><h3 className="text-lg font-bold text-white">Registered Users</h3></div>
+              <div className="p-6 border-b border-[#262626] flex justify-between items-center">
+                <h3 className="text-lg font-bold text-white">Registered Users ({realUsers.length})</h3>
+                <button onClick={loadClerkUsers} className="text-sm bg-[#252525] hover:bg-[#333] text-white px-4 py-2 rounded-lg transition-colors">🔄 Refresh List</button>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[600px]">
                   <thead>
@@ -417,16 +366,18 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#262626]">
-                    {realUsers.length === 0 ? (
-                      <tr><td colSpan={4} className="p-8 text-center text-gray-500">No users found. Please log in first!</td></tr>
+                    {loadingUsers ? (
+                       <tr><td colSpan={4} className="p-8 text-center text-yellow-400 animate-pulse font-bold">Fetching Live Users from Clerk...</td></tr>
+                    ) : realUsers.length === 0 ? (
+                      <tr><td colSpan={4} className="p-8 text-center text-gray-500">No users found.</td></tr>
                     ) : (
                       realUsers.map((u, index) => (
-                        <tr key={index} className="hover:bg-[#1E1E1E]">
+                        <tr key={u.id || index} className="hover:bg-[#1E1E1E]">
                           <td className="p-4 pl-6 font-bold text-white text-sm">{u.name}</td>
                           <td className="p-4 text-gray-400 text-sm">{u.email}</td>
                           <td className="p-4">
-                            <span className="px-3 py-1 bg-[#252525] border border-[#333] text-gray-300 rounded-full text-xs font-bold">
-                              {u.role}
+                            <span className={`px-3 py-1 border rounded-full text-xs font-bold ${u.role === 'owner' || u.role === 'Owner' ? 'bg-yellow-400/10 border-yellow-400 text-yellow-400' : 'bg-[#252525] border-[#333] text-gray-300'}`}>
+                              {u.role.toUpperCase()}
                             </span>
                           </td>
                           <td className="p-4 text-gray-500 text-sm">{u.joined}</td>

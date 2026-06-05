@@ -3,6 +3,7 @@
 import Navbar from '@/components/Navbar'; 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs'; 
+import { supabase } from "@/lib/supabase"; // 👉 SUPABASE IMPORT KIYA
 
 export default function SearchPage() {
   const { isSignedIn, user } = useUser();
@@ -19,6 +20,7 @@ export default function SearchPage() {
   // 👉 SYSTEM STATES
   const [displayPGs, setDisplayPGs] = useState<any[]>([]);
   const [allApprovedPGs, setAllApprovedPGs] = useState<any[]>([]);
+  const [allReviews, setAllReviews] = useState<any[]>([]); // Reviews ke liye Cloud state
   const [loading, setLoading] = useState(true);
 
   // Search States
@@ -27,30 +29,43 @@ export default function SearchPage() {
   const [searchBudget, setSearchBudget] = useState("");
   const [isSearched, setIsSearched] = useState(false);
 
-  // 👉 DYNAMIC RATING CALCULATOR
+  // 👉 DYNAMIC RATING CALCULATOR (CLOUD SE)
   const getDynamicRating = (pgId: number) => {
-    const allReviews = JSON.parse(localStorage.getItem('pgReviews') || "[]");
-    const currentReviews = allReviews.filter((rev: any) => rev.pgId === pgId);
+    const currentReviews = allReviews.filter((rev: any) => rev.pg_id === pgId);
     if (currentReviews.length === 0) return "New 🆕";
     const sum = currentReviews.reduce((total: number, r: any) => total + parseFloat(r.rating), 0);
     return `⭐ ${(sum / currentReviews.length).toFixed(1)}`;
   };
 
-  // 👉 LOAD FROM CENTRAL SYSTEM ('pg_properties')
-  useEffect(() => {
+  // 👉 LOAD FROM SUPABASE CLOUD
+  const fetchCloudData = async () => {
     setLoading(true);
+
+    // 1. Get saved PGs
     const storedSaved = localStorage.getItem('savedPGs');
-    if (storedSaved) {
-      setSavedPGs(JSON.parse(storedSaved));
+    if (storedSaved) setSavedPGs(JSON.parse(storedSaved));
+
+    // 2. Fetch APPROVED Properties from Supabase
+    const { data: properties } = await supabase
+      .from('pg_properties')
+      .select('*')
+      .eq('status', 'Approved') // Sirf approved wale dikhenge
+      .order('created_at', { ascending: false });
+
+    if (properties) {
+      setAllApprovedPGs(properties);
+      setDisplayPGs(properties);
     }
 
-    const allProperties = JSON.parse(localStorage.getItem('pg_properties') || "[]");
-    // Yahan hum saare APPROVED PGs filter karke nikalenge
-    const liveProperties = allProperties.filter((pg: any) => pg.status === "Approved");
-    
-    setAllApprovedPGs(liveProperties);
-    setDisplayPGs(liveProperties);
+    // 3. Fetch Reviews from Supabase
+    const { data: reviews } = await supabase.from('pg_reviews').select('*');
+    if (reviews) setAllReviews(reviews);
+
     setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchCloudData();
   }, []);
 
   const toggleSave = (pgId: number) => {
@@ -81,14 +96,16 @@ export default function SearchPage() {
   };
 
   const nextImage = () => {
-    if (selectedPG && selectedPG.images) {
-      setCurrentImageIndex((prev) => (prev === selectedPG.images.length - 1 ? 0 : prev + 1));
+    if (selectedPG && (selectedPG.images || selectedPG.image_url)) {
+      const imgArray = selectedPG.images || [selectedPG.image_url];
+      setCurrentImageIndex((prev) => (prev === imgArray.length - 1 ? 0 : prev + 1));
     }
   };
 
   const prevImage = () => {
-    if (selectedPG && selectedPG.images) {
-      setCurrentImageIndex((prev) => (prev === 0 ? selectedPG.images.length - 1 : prev - 1));
+    if (selectedPG && (selectedPG.images || selectedPG.image_url)) {
+      const imgArray = selectedPG.images || [selectedPG.image_url];
+      setCurrentImageIndex((prev) => (prev === 0 ? imgArray.length - 1 : prev - 1));
     }
   };
 
@@ -96,23 +113,29 @@ export default function SearchPage() {
     window.location.href = `tel:${phone}`;
   };
 
-  // 👉 SAVING RATING IN SYSTEM TO MAKE IT DYNAMIC
-  const handleRate = (rating: number) => {
+  // 👉 SAVING RATING DIRECT TO SUPABASE CLOUD
+  const handleRate = async (rating: number) => {
     setGivenRating(rating);
     if (!selectedPG) return;
 
-    const existingReviews = JSON.parse(localStorage.getItem('pgReviews') || "[]");
     const newReview = {
-      pgId: selectedPG.id,
-      studentName: user?.fullName || "Student",
+      pg_id: selectedPG.id,
+      student_name: user?.fullName || "Student",
       rating: rating,
       comment: "Quick Rating"
     };
     
-    localStorage.setItem('pgReviews', JSON.stringify([newReview, ...existingReviews]));
+    // Cloud mein insert karna
+    const { error } = await supabase.from('pg_reviews').insert([newReview]);
 
-    setToast({ visible: true, message: `⭐ You rated this PG ${rating} stars! Score updated.` });
-    setTimeout(() => { setToast({ visible: false, message: "" }); }, 3000);
+    if (!error) {
+      // Naye reviews cloud se refresh karna
+      const { data: reviews } = await supabase.from('pg_reviews').select('*');
+      if (reviews) setAllReviews(reviews);
+
+      setToast({ visible: true, message: `⭐ You rated this PG ${rating} stars! Score updated.` });
+      setTimeout(() => { setToast({ visible: false, message: "" }); }, 3000);
+    }
   };
 
   const handleSearch = () => {
@@ -162,7 +185,7 @@ export default function SearchPage() {
         </div>
 
 
-        {/* 👉 FIXED SEARCH BAR FOR MOBILE (Single Horizontal Line - Same as Home Page) */}
+        {/* 👉 FIXED SEARCH BAR FOR MOBILE (Single Horizontal Line) */}
         <div className="bg-[#0a0a0a]/80 backdrop-blur-xl border border-gray-800 rounded-full p-1.5 md:p-2 shadow-2xl flex flex-row items-center w-full mb-12 transition-all hover:border-gray-700">
           <div className="flex-1 flex flex-col px-3 md:px-6 border-r border-gray-800 w-full overflow-hidden text-left">
             <label className="text-[8px] md:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-0.5 truncate">City</label>
@@ -201,7 +224,7 @@ export default function SearchPage() {
 
         {/* RESULTS SECTION */}
         {loading ? (
-          <div className="text-center py-20 text-yellow-400 font-bold animate-pulse">Loading Live Properties...</div>
+          <div className="text-center py-20 text-yellow-400 font-bold animate-pulse">Loading Live Properties from Cloud...</div>
         ) : displayPGs.length === 0 ? (
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-3xl p-10 md:p-16 text-center">
             <span className="text-5xl md:text-6xl mb-4 block">🧐</span>
