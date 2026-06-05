@@ -19,6 +19,27 @@ export const metadata = {
     'Hostel in Sikar',
     'Rooms in Sikar',
   ],
+  // 👇 YE NAYA OPEN GRAPH (Social & Google Image) ADD KIYA HAI 👇
+  openGraph: {
+    title: 'PG Finder Sikar | Boys & Girls PG, Hostel & Rooms',
+    description: 'Find verified Boys PG, Girls PG, Hostels and Rooms in Sikar with photos, pricing and location details.',
+    url: 'https://pg-finder-ruddy.vercel.app', // Aapki Vercel wali live link
+    siteName: 'PG Finder Sikar',
+    images: [
+      {
+        url: '/og-image.jpg', // Ye image aapke public folder mein honi chahiye
+        width: 1200,
+        height: 630,
+        alt: 'PG Finder Sikar Preview Image',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  // 👇 YE GOOGLE SEARCH MEIN TITLE KE BAGAL WALE CHHOTE ICON KE LIYE HAI 👇
+  icons: {
+    icon: '/favicon.ico', 
+  },
 }
 
 export default function RootLayout({
