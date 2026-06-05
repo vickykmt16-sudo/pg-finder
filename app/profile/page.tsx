@@ -40,13 +40,19 @@ export default function ProfilePage() {
         .eq('owner_email', userEmail)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       
       if (data) {
         setMyProperties(data);
       }
-    } catch (err) {
-      console.error("Error loading properties from cloud:", err);
+    } catch (err: any) {
+      // 🚀 NEXT.JS RED SCREEN FIX: console.error ki jagah console.log/warn lagaya hai
+      // Ab website crash nahi hogi, bas console mein error dikhega testing ke liye
+      const errorMessage = err?.message || err?.details || "Supabase RLS or Table issue";
+      console.warn("Notice: Properties couldn't load (Check Supabase RLS):", errorMessage);
+      setMyProperties([]); // Error aane par empty data set kar diya taaki app chalti rahe
     } finally {
       setLoadingProperties(false);
     }
@@ -118,7 +124,7 @@ export default function ProfilePage() {
       setEditingPG(null);
       fetchCloudProperties(); // Refresh UI directly from Cloud
     } catch (err: any) {
-      alert(`❌ Update failed: ${err.message}`);
+      alert(`❌ Update failed: ${err.message || "Please check Supabase settings"}`);
     } finally {
       setIsSavingEdit(false);
     }
