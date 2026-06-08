@@ -6,11 +6,16 @@ import "./globals.css";
 
 export const metadata = {
   title: 'PG Finder Sikar | Boys & Girls PG, Hostel & Rooms',
-  description:
-    'Find verified Boys PG, Girls PG, Hostels and Rooms in Sikar with photos, pricing and location details.',
+  description: 'Find verified Boys PG, Girls PG, Hostels and Rooms in Sikar with photos, pricing and location details.',
+  
+  // 👇 GOOGLE KO BATANE KE LIYE KI YAHAN "VERCEL" NAHI, "PG FINDER" LIKHNA HAI
+  applicationName: 'PG Finder', 
+  
   verification: {
     google: 'rMMVU0sfcUhmjU78tDyEEKljKXI34XoIAP7uamGDib4',
   },
+  
+  // 👇 ADVANCED SEO KEYWORDS
   keywords: [
     'PG Finder Sikar',
     'PG in Sikar',
@@ -18,16 +23,21 @@ export const metadata = {
     'Girls PG in Sikar',
     'Hostel in Sikar',
     'Rooms in Sikar',
+    'Best PG near me',
+    'Student hostel Sikar',
+    'Piprali Road PG',
+    'Sikar coaching PG'
   ],
-  // 👇 YE NAYA OPEN GRAPH (Social & Google Image) ADD KIYA HAI 👇
+  
+  // 👇 OPEN GRAPH (Social Media & Google Cards)
   openGraph: {
     title: 'PG Finder Sikar | Boys & Girls PG, Hostel & Rooms',
     description: 'Find verified Boys PG, Girls PG, Hostels and Rooms in Sikar with photos, pricing and location details.',
-    url: 'https://pg-finder-ruddy.vercel.app', // Aapki Vercel wali live link
-    siteName: 'PG Finder Sikar',
+    url: 'https://pg-finder-sikar.vercel.app', // 👉 NAYI UPDATED LINK
+    siteName: 'PG Finder', // 👉 SITE KA ASLI NAAM
     images: [
       {
-        url: '/og-image.jpg', // Ye image aapke public folder mein honi chahiye
+        url: '/og-image.jpg', 
         width: 1200,
         height: 630,
         alt: 'PG Finder Sikar Preview Image',
@@ -36,7 +46,7 @@ export const metadata = {
     locale: 'en_IN',
     type: 'website',
   },
-  // 👇 YE GOOGLE SEARCH MEIN TITLE KE BAGAL WALE CHHOTE ICON KE LIYE HAI 👇
+  
   icons: {
     icon: '/favicon.ico', 
   },
